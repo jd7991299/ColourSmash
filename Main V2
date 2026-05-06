@@ -1,4 +1,4 @@
-package main;
+
 
 import javax.swing.*;
 import entity.Tile;
@@ -55,7 +55,7 @@ public class Main extends JPanel implements KeyListener {
         
         //load image
         Toolkit tk = Toolkit.getDefaultToolkit();
-        playerPic = tk.getImage("player.png");
+        playerPic = tk.getImage("redPaintBrush.png");
         
         //initialize player1
         player1 = new Player();
@@ -218,6 +218,3 @@ public class Main extends JPanel implements KeyListener {
         repaint(); // redraw screen every frame
     } // gameLoop
 } // class
-
-
-
