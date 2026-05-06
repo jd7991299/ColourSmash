@@ -23,10 +23,12 @@ public class Main extends JPanel implements KeyListener {
     
     int gameState = WELCOME;
   
-    // ===== PLAYER VARIABLES =====
+    // ===== PLAYER 1 VARIABLES =====
     
-    Player player1;
+    Player [] player;
     Image playerPic;
+    
+    
     
     //background tiles
     Tile[][] tiles;
@@ -58,7 +60,12 @@ public class Main extends JPanel implements KeyListener {
         playerPic = tk.getImage("redPaintBrush.png");
         
         //initialize player1
-        player1 = new Player();
+        player = new Player[2];
+        
+        for(int i = 0;i < player.length; i++) {
+        	player[i] = new Player();
+        }
+        
         
         //initialize tiles
         tiles = new Tile[300][200];
@@ -112,7 +119,8 @@ public class Main extends JPanel implements KeyListener {
         	
             // Draw player
             g.setColor(Color.blue);
-            g.drawImage(playerPic, player1.x, player1.y, player1.size, player1.size, this);
+            g.drawImage(playerPic, player[0].x, player[0].y, player[0].size, player[0].size, this);
+            g.drawImage(playerPic, player[1].x, player[1].y, player[1].size, player[1].size, this);
         }
 
         // ===== WIN SCREEN =====
@@ -134,19 +142,35 @@ public class Main extends JPanel implements KeyListener {
         // Only move during gameplay
         if (gameState == PLAYING) {
         	 if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                 player1.movePlayerLeft();
+                 player[0].movePlayerLeft();
              }
 
              if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-             	player1.movePlayerRight();
+             	player[0].movePlayerRight();
              }
 
              if (e.getKeyCode() == KeyEvent.VK_UP){
-             	player1.movePlayerUp();
+             	player[0].movePlayerUp();
              }
 
              if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-             	player1.movePlayerDown();
+             	player[0].movePlayerDown();
+             }
+             
+             if (e.getKeyCode() == KeyEvent.VK_A) {
+                 player[1].movePlayerLeft();
+             }
+
+             if (e.getKeyCode() == KeyEvent.VK_D) {
+             	player[1].movePlayerRight();
+             }
+
+             if (e.getKeyCode() == KeyEvent.VK_W){
+             	player[1].movePlayerUp();
+             }
+
+             if (e.getKeyCode() == KeyEvent.VK_S) {
+             	player[1].movePlayerDown();
              }
             
         	for(int i = 0; i < tiles.length; i++) {
@@ -169,8 +193,11 @@ public class Main extends JPanel implements KeyListener {
 
     public void startGame() {
 
-        player1.x = 100;
-        player1.y = 100;
+        player[0].x = 100;
+        player[0].y = 100;
+        
+        player[1].x = 100;
+        player[1].y = 100;
 
     	gameState = PLAYING;
     	repaint();
@@ -181,33 +208,34 @@ public class Main extends JPanel implements KeyListener {
     // ===== CHECK COLLISION =====
 
     	public void colourTile(Tile tile) {
-    
-    	if(((player1.x - tile.x > -player1.size && player1.x - tile.x < Tile.WIDTH) && (player1.y - tile.y > -player1.size && player1.y - tile.y < Tile.HEIGHT))) {
-    		tile.setColour(Color.BLUE);
-    	}//if
+    	for(int i = 0; i < player.length;i++) {
+	    	if(((player[i].x - tile.x > -player[i].size && player[i].x - tile.x < Tile.WIDTH) && (player[i].y - tile.y > -player[i].size && player[i].y - tile.y < Tile.HEIGHT))) {
+	    		tile.setColour(Color.BLUE);
+	    	}//if
+    	}
     	
     } // colourTile
 
     // ===== KEEP PLAYER ON SCREEN =====
 
     public void keepPlayerOnScreen() {
-
-    	if(player1.x < 0) {
-    		player1.x = 0;
+    	for(int i = 0; i < player.length; i++) {
+	    	if(player[i].x < 0) {
+	    		player[i].x = 0;
+	    	}
+	    	
+	    	if(player[i].x > WIDTH - (20 + player[i].size)) {
+	    		player[i].x = WIDTH - (20 + player[i].size);
+	    	}
+	    	
+	    	if(player[i].y < 0) {
+	    		player[i].y = 0;
+	    	}
+	    	
+	    	if(player[i].y > HEIGHT - 2*player[i].size) {
+	    		player[i].y = HEIGHT - 2*player[i].size;
+	    	}
     	}
-    	
-    	if(player1.x > WIDTH - (20 + player1.size)) {
-    		player1.x = WIDTH - (20 + player1.size);
-    	}
-    	
-    	if(player1.y < 0) {
-    		player1.y = 0;
-    	}
-    	
-    	if(player1.y > HEIGHT - 2*player1.size) {
-    		player1.y = HEIGHT - 2*player1.size;
-    	}
-
     } // keepPlayerOnScreen
     
     public void gameLoop() {
