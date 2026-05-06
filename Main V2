@@ -1,4 +1,4 @@
-
+package main;
 
 import javax.swing.*;
 import entity.Tile;
@@ -26,7 +26,8 @@ public class Main extends JPanel implements KeyListener {
     // ===== PLAYER 1 VARIABLES =====
     
     Player [] player;
-    Image playerPic;
+    Image player1Pic;
+    Image player2Pic;
     
     
     
@@ -57,7 +58,8 @@ public class Main extends JPanel implements KeyListener {
         
         //load image
         Toolkit tk = Toolkit.getDefaultToolkit();
-        playerPic = tk.getImage("redPaintBrush.png");
+        player1Pic = tk.getImage("redPaintBrush.png");
+        player2Pic = tk.getImage("bluePaintBrush.png");
         
         //initialize player1
         player = new Player[2];
@@ -119,8 +121,8 @@ public class Main extends JPanel implements KeyListener {
         	
             // Draw player
             g.setColor(Color.blue);
-            g.drawImage(playerPic, player[0].x, player[0].y, player[0].size, player[0].size, this);
-            g.drawImage(playerPic, player[1].x, player[1].y, player[1].size, player[1].size, this);
+            g.drawImage(player1Pic, player[0].x, player[0].y, player[0].size, player[0].size, this);
+            g.drawImage(player2Pic, player[1].x, player[1].y, player[1].size, player[1].size, this);
         }
 
         // ===== WIN SCREEN =====
