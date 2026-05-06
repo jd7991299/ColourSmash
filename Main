@@ -1,4 +1,7 @@
 import javax.swing.*;
+
+import entity.Player;
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -65,7 +68,7 @@ import java.awt.event.*;
 
 */
 
-public class Main extends JPanel implements KeyListener {
+public class CoinCollectorGame extends JPanel implements KeyListener {
     // ===== WINDOW SETTINGS =====
 
     static final int WIDTH = 800;
@@ -82,11 +85,8 @@ public class Main extends JPanel implements KeyListener {
 
     // ===== PLAYER VARIABLES =====
 
-    int playerX = 100;
-    int playerY = 100;
-    int playerSize = 40;
     int moveAmount = 15;
-
+    Player player1 = new Player();
     // ===== COIN VARIABLES =====
 
     int coinX = 400;
@@ -105,7 +105,7 @@ public class Main extends JPanel implements KeyListener {
     public static void main(String[] args) {
         JFrame window = new JFrame("Coin Collector Game");
 
-        CoinCollectorGameAnimation gamePanel = new CoinCollectorGameAnimation();
+        CoinCollectorGame gamePanel = new CoinCollectorGame();
 
         window.add(gamePanel);
         window.setSize(WIDTH, HEIGHT);
@@ -117,7 +117,7 @@ public class Main extends JPanel implements KeyListener {
 
     // ===== CONSTRUCTOR =====
 
-   public CoinCollectorGameAnimation() {
+   public CoinCollectorGame() {
        setBackground(Color.white);
 
        // Game loop runs every 50 ms (~20 FPS)
@@ -156,7 +156,7 @@ public class Main extends JPanel implements KeyListener {
 
             // Draw player
             g.setColor(Color.blue);
-            g.fillRect(playerX, playerY, playerSize, playerSize);
+            g.fillRect(player1.playerX, player1.playerY, player1.playerSize, player1.playerSize);
 
             // Draw coin
             g.setColor(Color.yellow);
@@ -187,10 +187,26 @@ public class Main extends JPanel implements KeyListener {
         // Only move during gameplay
         if (gameState == PLAYING) {
             if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                playerX = playerX - moveAmount;
+                player1.movePlayerLeft(moveAmount);
             }
 
             if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            	player1.movePlayerRight(moveAmount);
+            }
+
+            if (e.getKeyCode() == KeyEvent.VK_UP){
+            	player1.movePlayerUp(moveAmount);
+            }
+
+            if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+            	player1.movePlayerDown(moveAmount);
+            }
+/*
+            if (e.getKeyCode() == KeyEvent.VK_W) {
+                player.changePlayerX(moveAmount);
+            }
+
+            if (e.getKeyCode() == KeyEvent.VK_) {
                 playerX = playerX + moveAmount;
             }
 
@@ -201,7 +217,7 @@ public class Main extends JPanel implements KeyListener {
             if (e.getKeyCode() == KeyEvent.VK_DOWN) {
                 playerY = playerY + moveAmount;
             }
-
+            */
             keepPlayerOnScreen();
             checkCoinHit();
         } // if
@@ -224,8 +240,8 @@ public class Main extends JPanel implements KeyListener {
     public void startGame() {
         score = 0;
 
-        playerX = 100;
-        playerY = 100;
+        player1.playerX = 100;
+        player1.playerY = 100;
 
         gameState = PLAYING;
 
@@ -254,10 +270,10 @@ public class Main extends JPanel implements KeyListener {
     // ===== CHECK COLLISION =====
 
    public void checkCoinHit() {
-        if (playerX < coinX + coinSize &&
-            playerX + playerSize > coinX &&
-            playerY < coinY + coinSize &&
-            playerY + playerSize > coinY) {
+        if (player1.playerX < coinX + coinSize &&
+        		player1.playerX + player1.playerSize > coinX &&
+        		player1.playerY < coinY + coinSize &&
+        		player1.playerY + player1.playerSize > coinY) {
             score++;
             moveCoin();
 
@@ -271,20 +287,20 @@ public class Main extends JPanel implements KeyListener {
     // ===== KEEP PLAYER ON SCREEN =====
 
     public void keepPlayerOnScreen() {
-        if (playerX < 0) {
-            playerX = 0;
+        if (player1.playerX < 0) {
+        	player1.playerX = 0;
         } // if
 
-        if (playerY < 0) {
-            playerY = 0;
+        if (player1.playerY < 0) {
+        	player1.playerY = 0;
         } // if 
 
-        if (playerX > WIDTH - playerSize) {
-            playerX = WIDTH - playerSize;
+        if (player1.playerX > WIDTH - player1.playerSize) {
+        	player1.playerX = WIDTH - player1.playerSize;
         } // if
 
-        if (playerY > HEIGHT - playerSize) {
-            playerY = HEIGHT - playerSize;
+        if (player1.playerY > HEIGHT - player1.playerSize) {
+        	player1.playerY = HEIGHT - player1.playerSize;
         } // if
     } // keepPlayerOnScreen
 
