@@ -1,0 +1,301 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+/*
+     Java GUI Example
+    -----------------
+    This program teaches graphical user interface elements
+    from the Java Packages swing and awt:
+
+    - JFrame = the window
+    - JPanel = drawing area
+    - paintComponent() = draw graphics
+    - Keyboard events
+
+   Note:
+    - final variables store game state
+    - keypress changes variables
+    - repaint() updates the screen
+
+   Your tasks:
+
+    1) Write the methods:
+       - startGame
+       - moveCoin
+       - checkCoinHit
+       - keepPlayerOnScreen
+
+    2) Test all this works:
+
+    Your game should do all of these:
+     - Window opens
+     - Start screen shows
+     - SPACE starts game
+     - Arrow keys move player
+     - Coin can be collected
+     - Score increases
+     - Coin moves randomly
+     - Win screen appears at goal score
+
+   3) Make the following upgrades:
+     - Change colors
+     - Make player faster
+     - Increase goal score
+     - Add background color
+     - Make coin smaller
+     - Add second coin
+
+   4) Add an image to the game
+      a) Create a 40x40 pixel drawing of a player at  https://www.piskelapp.com/ . Download it and name it player.png.
+      b) Add Variable Near Top
+             Image playerPic;
+      c) Load Image in Constructor
+           - Add to the constructor: 
+ 
+             Toolkit tk = Toolkit.getDefaultToolkit();
+             playerPic = tk.getImage("player.png");
+           - Put   player.png   in same folder as Java file.
+
+      d) Replace:  
+          g.fillRect(playerX, playerY, playerSize, playerSize);
+        with:
+          g.drawImage(playerPic, playerX, playerY, playerSize, playerSize, this);
+
+
+*/
+
+public class Main extends JPanel implements KeyListener {
+    // ===== WINDOW SETTINGS =====
+
+    static final int WIDTH = 800;
+    static final int HEIGHT = 600;
+    Timer gameTimer;
+
+    // ===== GAME STATES =====
+
+    final int WELCOME = 0;
+    final int PLAYING = 1;
+    final int WIN = 2;
+
+    int gameState = WELCOME;
+
+    // ===== PLAYER VARIABLES =====
+
+    int playerX = 100;
+    int playerY = 100;
+    int playerSize = 40;
+    int moveAmount = 15;
+
+    // ===== COIN VARIABLES =====
+
+    int coinX = 400;
+    int coinY = 250;
+    int coinSize = 30;
+    int coinDX = 5;
+    int coinDY = 3;
+
+    // ===== SCORE =====
+
+    int score = 0;
+    int goal = 10;
+
+    // ===== MAIN METHOD =====
+
+    public static void main(String[] args) {
+        JFrame window = new JFrame("Coin Collector Game");
+
+        CoinCollectorGameAnimation gamePanel = new CoinCollectorGameAnimation();
+
+        window.add(gamePanel);
+        window.setSize(WIDTH, HEIGHT);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setVisible(true);
+
+        window.addKeyListener(gamePanel);
+    } // main
+
+    // ===== CONSTRUCTOR =====
+
+   public CoinCollectorGameAnimation() {
+       setBackground(Color.white);
+
+       // Game loop runs every 50 ms (~20 FPS)
+       gameTimer = new Timer(50, new ActionListener() {
+           public void actionPerformed(ActionEvent e) {
+              gameLoop();
+           }
+       });
+
+       gameTimer.start(); // start loop
+    }  // CoinCollectorGameAnimation
+
+    // ===== DRAW SCREEN =====
+
+    public void paintComponent(Graphics g){
+        super.paintComponent(g);
+
+        // ===== WELCOME SCREEN =====
+        if (gameState == WELCOME) {
+            g.setFont(new Font("Arial", Font.BOLD, 34));
+            g.setColor(Color.blue);
+            g.drawString("COIN COLLECTOR", 240, 220);
+
+            g.setFont(new Font("Arial", Font.PLAIN, 24));
+            g.setColor(Color.black);
+            g.drawString("Use Arrow Keys to Move", 250, 300);
+            g.drawString("Press SPACE to Start", 270, 350);
+        }
+
+        // ===== PLAY SCREEN =====
+        else if (gameState == PLAYING) {
+            g.setFont(new Font("Arial", Font.BOLD, 24));
+            g.setColor(Color.black);
+            g.drawString("Score: " + score, 30, 40);
+            g.drawString("Goal: " + goal, 30, 80);
+
+            // Draw player
+            g.setColor(Color.blue);
+            g.fillRect(playerX, playerY, playerSize, playerSize);
+
+            // Draw coin
+            g.setColor(Color.yellow);
+            g.fillOval(coinX, coinY, coinSize, coinSize);
+        }
+
+        // ===== WIN SCREEN =====
+        else if (gameState == WIN) {
+            g.setFont(new Font("Arial", Font.BOLD, 36));
+            g.setColor(Color.red);
+            g.drawString("YOU WIN!", 290, 240);
+
+            g.setFont(new Font("Arial", Font.PLAIN, 28));
+            g.setColor(Color.black);
+            g.drawString("Final Score: " + score, 280, 320);
+            g.drawString("Press SPACE to Play Again", 200, 400);
+        } // win screen
+    } // paintComponent
+
+    // ===== KEY PRESS =====
+
+    public void keyPressed(KeyEvent e) {
+        // SPACE starts or restarts game
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            startGame();
+        }
+
+        // Only move during gameplay
+        if (gameState == PLAYING) {
+            if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+                playerX = playerX - moveAmount;
+            }
+
+            if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                playerX = playerX + moveAmount;
+            }
+
+            if (e.getKeyCode() == KeyEvent.VK_UP){
+                playerY = playerY - moveAmount;
+            }
+
+            if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                playerY = playerY + moveAmount;
+            }
+
+            keepPlayerOnScreen();
+            checkCoinHit();
+        } // if
+
+        // repaint() tells Java to draw again
+        repaint();
+    } // keyPressed
+
+
+    // ===== KEYINPUT METHODS =====
+    // that must be implemented by we 
+    // are not using
+
+    public void keyReleased(KeyEvent e){}
+
+    public void keyTyped(KeyEvent e){}
+
+    // ===== GAME LOGIC =====
+
+    public void startGame() {
+        score = 0;
+
+        playerX = 100;
+        playerY = 100;
+
+        gameState = PLAYING;
+
+        moveCoin();
+
+        repaint();
+
+    } // startGame
+
+    // ===== MOVE COIN =====
+
+    public void moveCoin() {
+       coinX = coinX + coinDX;
+       coinY = coinY + coinDY;
+
+       // bounce off walls
+       if (coinX <= 0 || coinX >= WIDTH - coinSize) {
+           coinDX = -coinDX;
+       }
+
+       if (coinY <= 0 || coinY >= HEIGHT - coinSize) {
+           coinDY = -coinDY;
+       }
+     }  // moveCoin
+
+    // ===== CHECK COLLISION =====
+
+   public void checkCoinHit() {
+        if (playerX < coinX + coinSize &&
+            playerX + playerSize > coinX &&
+            playerY < coinY + coinSize &&
+            playerY + playerSize > coinY) {
+            score++;
+            moveCoin();
+
+            if (score >= goal) {
+                gameState = WIN;
+            } // if
+        } // if
+    } // checkCoinHit
+
+
+    // ===== KEEP PLAYER ON SCREEN =====
+
+    public void keepPlayerOnScreen() {
+        if (playerX < 0) {
+            playerX = 0;
+        } // if
+
+        if (playerY < 0) {
+            playerY = 0;
+        } // if 
+
+        if (playerX > WIDTH - playerSize) {
+            playerX = WIDTH - playerSize;
+        } // if
+
+        if (playerY > HEIGHT - playerSize) {
+            playerY = HEIGHT - playerSize;
+        } // if
+    } // keepPlayerOnScreen
+
+
+    // ===== KEEP PLAYER ON SCREEN =====
+    public void gameLoop() {
+        if (gameState == PLAYING) {
+           moveCoin();          // coin moves automatically now
+           checkCoinHit();      // check collisions
+        }
+
+        repaint(); // redraw screen every frame
+    } // gameLoop
+} // class
