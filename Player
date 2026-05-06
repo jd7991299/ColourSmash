@@ -1,0 +1,31 @@
+package entity;
+
+public class Player {
+
+    // ===== PLAYER VARIABLES =====
+
+    public int playerX = 100;
+    public int playerY = 100;
+    public int playerSize = 40;
+    
+    public Player() {
+    	
+    }
+    public void movePlayerRight(int moveAmount) {
+    	playerX += moveAmount;
+    }
+    
+    public void movePlayerLeft(int moveAmount) {
+    	playerX -= moveAmount;
+    }
+    
+    public void movePlayerUp(int moveAmount) {
+    	playerY -= moveAmount;
+    }
+    
+    public void movePlayerDown(int moveAmount) {
+    	playerY += moveAmount;
+    }
+    
+
+}
