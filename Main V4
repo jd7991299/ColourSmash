@@ -23,12 +23,11 @@ public class Main extends JPanel implements KeyListener {
     
     int gameState = WELCOME;
   
-    // ===== PLAYER 1 VARIABLES =====
+    // ===== PLAYER VARIABLES =====
     
     Player [] player;
     Image player1Pic;
     Image player2Pic;
-    
     
     
     //background tiles
@@ -92,6 +91,29 @@ public class Main extends JPanel implements KeyListener {
         gameTimer.start(); // start loop
        
     }
+    
+    public void gameLoop() {
+        if (gameState == PLAYING) {
+        	for(int i = 0; i < player.length; i++) {
+        		if (player[i].up && !player[i].down){
+    			    player[i].movePlayerUp();   
+    			} else if (player[i].down && !player[i].up){
+    			    player[i].movePlayerDown();   
+    			}
+    			
+        		if (player[i].left && !player[i].right) {
+    			    player[i].movePlayerLeft();   
+    			} else if(player[i].right && !player[i].left) {
+    			    player[i].movePlayerRight();   
+    			}
+        		
+        		colourTile(player[i], tiles);
+        	}//for
+        keepPlayerOnScreen();
+        }//if
+
+        repaint(); // redraw screen every frame
+    } // gameLoop
 
     // ===== DRAW SCREEN =====
 
@@ -144,49 +166,77 @@ public class Main extends JPanel implements KeyListener {
 
         // Only move during gameplay
         if (gameState == PLAYING) {
-        	 if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                 player[0].movePlayerLeft();
-             }
+			if (e.getKeyCode() == KeyEvent.VK_UP){
+			    player[0].up = true;      
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+				player[0].down = true;          
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+				player[0].left = true;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+				player[0].right = true; 
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_W){
+				player[1].up = true;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_S) {
+				player[1].down = true;
+			}
+			 
+			if (e.getKeyCode() == KeyEvent.VK_A) {
+				player[1].left = true;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_D) {
+				player[1].right = true;
+			}
 
-             if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-             	player[0].movePlayerRight();
-             }
-
-             if (e.getKeyCode() == KeyEvent.VK_UP){
-             	player[0].movePlayerUp();
-             }
-
-             if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-             	player[0].movePlayerDown();
-             }
-             
-             if (e.getKeyCode() == KeyEvent.VK_A) {
-                 player[1].movePlayerLeft();
-             }
-
-             if (e.getKeyCode() == KeyEvent.VK_D) {
-             	player[1].movePlayerRight();
-             }
-
-             if (e.getKeyCode() == KeyEvent.VK_W){
-             	player[1].movePlayerUp();
-             }
-
-             if (e.getKeyCode() == KeyEvent.VK_S) {
-             	player[1].movePlayerDown();
-             }
-            
-        	for(int i = 0; i < player.length; i++) {
-            		colourTile(player[i], tiles);
-        	}
-
-            keepPlayerOnScreen();
         } // if
-
-        repaint();
     } // keyPressed
 
-    public void keyReleased(KeyEvent e){}
+    public void keyReleased(KeyEvent e){
+    	if (gameState == PLAYING) {
+			if (e.getKeyCode() == KeyEvent.VK_UP){
+			    player[0].up = false;      
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+				player[0].down = false;          
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+				player[0].left = false;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+				player[0].right = false; 
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_W){
+				player[1].up = false;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_S) {
+				player[1].down = false;
+			}
+			 
+			if (e.getKeyCode() == KeyEvent.VK_A) {
+				player[1].left = false;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_D) {
+				player[1].right = false;
+			}
+        } // if
+    } // keyPressed
+    	
 
     public void keyTyped(KeyEvent e){}
 
@@ -239,14 +289,6 @@ public class Main extends JPanel implements KeyListener {
 	    	}
     	}
     } // keepPlayerOnScreen
-    
-    public void gameLoop() {
-        if (gameState == PLAYING) {
-
-        }
-
-        repaint(); // redraw screen every frame
-    } // gameLoop
     
     public void showResult(Graphics g) {
       //  super.paintComponent(g);
