@@ -6,7 +6,6 @@ import entity.Player;
 import java.awt.*;
 import java.awt.event.*;
 
-
 public class Main extends JPanel implements KeyListener {
     // ===== WINDOW SETTINGS =====
 
@@ -14,6 +13,8 @@ public class Main extends JPanel implements KeyListener {
     static final int HEIGHT = 600;
     
     Timer gameTimer;
+    long currentTime;
+    long startTime;
 
     // ===== GAME STATES =====
 
@@ -28,7 +29,6 @@ public class Main extends JPanel implements KeyListener {
     Player [] player;
     Image player1Pic;
     Image player2Pic;
-    
     
     //background tiles
     Tile[][] tiles;
@@ -54,7 +54,7 @@ public class Main extends JPanel implements KeyListener {
     public Main() {
         setBackground(Color.WHITE);
         
-        //initialize player1
+        //initialize players
         player = new Player[2];
         
         for(int i = 0;i < player.length; i++) {
@@ -68,7 +68,6 @@ public class Main extends JPanel implements KeyListener {
         Toolkit tk = Toolkit.getDefaultToolkit();
         player1Pic = tk.getImage("redPaintBrush.png");
         player2Pic = tk.getImage("bluePaintBrush.png");
-        
         
         //initialize tiles
         tiles = new Tile[400][300];
@@ -89,7 +88,6 @@ public class Main extends JPanel implements KeyListener {
         });
 
         gameTimer.start(); // start loop
-       
     }
     
     public void gameLoop() {
@@ -110,6 +108,12 @@ public class Main extends JPanel implements KeyListener {
         		colourTile(player[i], tiles);
         	}//for
         keepPlayerOnScreen();
+        
+        //timer
+        currentTime = System.currentTimeMillis();
+        if(currentTime >= 10000 + startTime) {
+        	gameState = WIN;
+        }
         }//if
 
         repaint(); // redraw screen every frame
@@ -251,6 +255,7 @@ public class Main extends JPanel implements KeyListener {
         player[1].y = 100;
 
     	gameState = PLAYING;
+    	startTime = System.currentTimeMillis();
     	repaint();
     	
     } // startGame
