@@ -22,6 +22,7 @@ public class Main extends JPanel implements KeyListener {
     final int PLAYING = 1;
     final int WIN = 2;
     int mode = 0;
+
     
     int gameState = WELCOME;
   
@@ -65,14 +66,14 @@ public class Main extends JPanel implements KeyListener {
         player[1].color = Color.BLUE;
         
         //load image
-        Toolkit tk = Toolkit.getDefaultToolkit();
         player[0].imageUp = tk.getImage("redPaintBrush.png");
         player[0].imageDown = tk.getImage("redPaintBrush.png");
         player[0].imageLeft = tk.getImage("redPaintBrushMoveLeft.png");
         player[0].imageRight = tk.getImage("redPaintBrushMoveRight.png");
-
-        player1Pic = tk.getImage("redPaintBrush.png");
-        player2Pic = tk.getImage("bluePaintBrush.png");
+        player[1].imageUp = tk.getImage("bluePaintBrush.png");
+        player[1].imageDown = tk.getImage("bluePaintBrush.png");
+        player[1].imageLeft = tk.getImage("bluePaintBrushMoveLeft.png");
+        player[1].imageRight = tk.getImage("bluePaintBrushMoveRight.png");
         
         //initialize tiles
         tiles = new Tile[400][300];
@@ -86,7 +87,7 @@ public class Main extends JPanel implements KeyListener {
         }//for
         
         // Game loop runs every 50 ms (~20 FPS)
-        gameTimer = new Timer(50, new ActionListener() {
+        gameTimer = new Timer(10, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                gameLoop();
             }
@@ -97,25 +98,27 @@ public class Main extends JPanel implements KeyListener {
     
     public void gameLoop() {
         if (gameState == PLAYING) {
+        	for(int i = 0; i < player.length; i++) {
+        		if (player[i].up && !player[i].down){
+    			    player[i].movePlayerUp();   
+    			    player[i].setCurrentImage(player[i].imageUp);
+    			} else if (player[i].down && !player[i].up){
+    			    player[i].movePlayerDown();   
+    			    player[i].setCurrentImage(player[i].imageDown);
+    			}
+        		if (player[i].left && !player[i].right) {
+    			    player[i].movePlayerLeft();   
+    			    player[i].setCurrentImage(player[i].imageLeft);
+    			} else if(player[i].right && !player[i].left) {
+    			    player[i].movePlayerRight();   
+    			    player[i].setCurrentImage(player[i].imageRight);
+    			}
+                keepPlayerOnScreen();
 
-	    	for(int i = 0; i < player.length; i++) {
-	    		if (player[i].up && !player[i].down){
-				    player[i].movePlayerUp();   
-				} else if (player[i].down && !player[i].up){
-				    player[i].movePlayerDown();   
-				}
-				
-	    		if (player[i].left && !player[i].right) {
-				    player[i].movePlayerLeft();   
-				} else if(player[i].right && !player[i].left) {
-				    player[i].movePlayerRight();   
-				}
-	            keepPlayerOnScreen();
-	
-	    		colourTile(player[i], tiles);
-	    	}//for
-        
-	        //timer
+        		colourTile(player[i], tiles);
+        	}//for   
+        	
+        	//timer
 	        if(mode == 3) {
 		        currentTime = System.currentTimeMillis();
 		        if(currentTime >= 15000 + startTime) {
@@ -163,8 +166,8 @@ public class Main extends JPanel implements KeyListener {
             }
         	
             // Draw player
-            g.drawImage(player1Pic, player[0].x, player[0].y, player[0].size, player[0].size, this);
-            g.drawImage(player2Pic, player[1].x, player[1].y, player[1].size, player[1].size, this);
+            g.drawImage(player[0].currentImage, player[0].x, player[0].y, player[0].size, player[0].size, this);
+            g.drawImage(player[1].currentImage, player[1].x, player[1].y, player[1].size, player[1].size, this);
         }
 
         // ===== WIN SCREEN =====
@@ -173,10 +176,11 @@ public class Main extends JPanel implements KeyListener {
         } // win screen
     } // paintComponent
 
+
     // ===== KEY PRESS =====
 
     public void keyPressed(KeyEvent e) {
-        // SPACE starts or restarts game
+    	// Select game mode
     	if (e.getKeyCode() == KeyEvent.VK_1) {
         	mode = 1;
             startGame();
@@ -189,6 +193,7 @@ public class Main extends JPanel implements KeyListener {
         	mode = 3;
             startGame();
         }
+
 
         // Only move during gameplay
         if (gameState == PLAYING) {
@@ -223,7 +228,7 @@ public class Main extends JPanel implements KeyListener {
 			if (e.getKeyCode() == KeyEvent.VK_D) {
 				player[1].right = true;
 			}
-			
+
 			keepPlayersApart();
         } // if
     } // keyPressed
@@ -267,8 +272,7 @@ public class Main extends JPanel implements KeyListener {
 
     public void keyTyped(KeyEvent e){}
 
-    // ===== GAME LOGIC =====
-
+    //set initial states
     public void startGame() {
 
     	if(mode == 3) {
@@ -278,8 +282,9 @@ public class Main extends JPanel implements KeyListener {
         else {
         	player[0].moveAmount = 2;
         	player[1].moveAmount = 2;
-        }
+        }//if else
     	
+    	//initial states
         player[0].x = 100;
         player[0].y = 100;
         
@@ -291,7 +296,8 @@ public class Main extends JPanel implements KeyListener {
         	player[i].down = false;
         	player[i].left = false;
         	player[i].right = false;
-        }
+        	player[i].setCurrentImage(player[i].imageDown);
+        }//for
 
     	gameState = PLAYING;
     	startTime = System.currentTimeMillis();
@@ -299,21 +305,16 @@ public class Main extends JPanel implements KeyListener {
     	
     } // startGame
 
-
-    // ===== CHECK COLLISION =====
-
-    	public void colourTile(Player player, Tile[][] tiles) {
-    	for(int i = player.x; i < player.x + player.size;i++) {
-    		for(int j = player.y; j < player.y + player.size; j++) {
-	    	
+    //colour the background behind character
+	public void colourTile(Player player, Tile[][] tiles) {
+		for(int i = player.x; i < player.x + player.size;i++) {
+			for(int j = player.y; j < player.y + player.size; j++) {
 	    		tiles[i / 2][j / 2].setColour(player.color);
 	    	}//if
-    	}
-    	
+		}//for
     } // colourTile
 
     // ===== KEEP PLAYER ON SCREEN =====
-
     public void keepPlayerOnScreen() {
     	for(int i = 0; i < player.length; i++) {
 	    	if(player[i].x < 0) {
@@ -349,46 +350,46 @@ public class Main extends JPanel implements KeyListener {
     		player[0].left = false;
     		player[1].right = false;
     	}
-    } // keepPlayerOnScreen
+    } // keepPlayersApart
     
     public void showResult(Graphics g) {
-      //  super.paintComponent(g);
-    	
-    	int countRed = 0;
-    	int countBlue = 0;
-    	int totalColouredTiles = 0;
-    	double percentRed = 0.0;
-    	double percentBlue = 0.0;
-    	
-    	for(int i = 0; i < tiles.length; i++) {
-        	for(int j = 0; j < tiles[i].length; j++) {
-            	if(tiles[i][j].getColour().equals(Color.RED)) {
-            		countRed++;
-                	totalColouredTiles++;
-            	} else if(tiles[i][j].getColour().equals(Color.BLUE)) {
-            		countBlue++;
-                	totalColouredTiles++;
-            	}//if
-        	}//for
-        }//for
-    	
-    	percentRed = Math.round(1000.0 * countRed / totalColouredTiles) / 10.0;
-    	percentBlue = Math.round(1000.0 * countBlue / totalColouredTiles) / 10.0;
-    	
-    	g.setFont(new Font("Arial", Font.BOLD, 36));
-        g.setColor(Color.red);
-        g.drawString(percentRed + "%", 100, 150);
-        g.setColor(Color.BLUE);
-        g.drawString(percentBlue + "%", 250, 150);
-
-        if(countRed > countBlue) {
-        	g.setColor(Color.red);
-        	g.drawString("RED WINS!", 290, 240);
-        }
-        else {
-        	g.setColor(Color.blue);
-        	g.drawString("BLUE WINS!", 290, 240);
-        }
-    	
-    }//calculateResult
+        //  super.paintComponent(g);
+      	
+      	int countRed = 0;
+      	int countBlue = 0;
+      	int totalColouredTiles = 0;
+      	double percentRed = 0.0;
+      	double percentBlue = 0.0;
+      	
+      	for(int i = 0; i < tiles.length; i++) {
+          	for(int j = 0; j < tiles[i].length; j++) {
+              	if(tiles[i][j].getColour().equals(Color.RED)) {
+              		countRed++;
+                  	totalColouredTiles++;
+              	} else if(tiles[i][j].getColour().equals(Color.BLUE)) {
+              		countBlue++;
+                  	totalColouredTiles++;
+              	}//if
+          	}//for
+          }//for
+      	
+      	percentRed = Math.round(1000.0 * countRed / totalColouredTiles) / 10.0;
+      	percentBlue = Math.round(1000.0 * countBlue / totalColouredTiles) / 10.0;
+      	
+      	g.setFont(new Font("Arial", Font.BOLD, 36));
+      	g.setColor(Color.red);
+      	g.drawString(percentRed + "%", 100, 150);
+      	g.setColor(Color.BLUE);
+      	g.drawString(percentBlue + "%", 250, 150);
+		
+      	if(countRed > countBlue) {
+      		g.setColor(Color.red);
+      		g.drawString("RED WINS!", 290, 240);
+		}
+      	else {
+      		g.setColor(Color.blue);
+		  	g.drawString("BLUE WINS!", 290, 240);
+      	}
+      	
+  	}//showResult
 } // class
