@@ -146,13 +146,14 @@ public class Main extends JPanel implements KeyListener {
 
         // ===== WELCOME SCREEN =====
         if (gameState == WELCOME) {
+        	g.drawImage(backgroundPic, 0, 0, this);
             g.setFont(new Font("Arial", Font.BOLD, 50));
             g.setColor(Color.blue);
             g.drawString("Colour", 230, 220);
             g.setColor(Color.red);
             g.drawString("Smash", 395, 220);
-            g.setFont(new Font("Arial", Font.PLAIN, 24));
-            g.setColor(Color.black);
+            g.setFont(new Font("Arial", Font.BOLD, 24));
+            g.setColor(Color.white);
             g.drawString("Timed Mode - Press 1 to Play", 235, 300);
             g.drawString("2v2 Battle - Press 2 to Play", 250, 350);
             g.drawString("Sumo Battle - Press 3 to Play", 235, 400);
@@ -206,6 +207,7 @@ public class Main extends JPanel implements KeyListener {
             // Draw player
             g.drawImage(player[0].currentImage, player[0].x, player[0].y, player[0].size, player[0].size, this);
             g.drawImage(player[1].currentImage, player[1].x, player[1].y, player[1].size, player[1].size, this);
+            
         }
 
         // ===== WIN SCREEN =====
