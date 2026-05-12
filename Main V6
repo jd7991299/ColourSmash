@@ -169,6 +169,7 @@ public class Main extends JPanel implements KeyListener {
         		
         		g.drawString("Red Player - Arrow Keys ", 250, 300);
         		g.drawString("Blue Player - WASD ", 275, 350);
+        		g.drawString("Press Space to start", 270, 450);
         	}
     		else if(mode == 2) {
         		g.setFont(new Font("Arial", Font.BOLD, 24));
@@ -178,6 +179,7 @@ public class Main extends JPanel implements KeyListener {
         		
         		g.drawString("Red Player - Arrow Keys ", 250, 300);
         		g.drawString("Blue Player - WASD ", 275, 350);
+        		g.drawString("Press Space to start", 270, 450);
         	}
     		else if(mode == 3) {
         		g.setFont(new Font("Arial", Font.BOLD, 24));
@@ -187,6 +189,7 @@ public class Main extends JPanel implements KeyListener {
         		
         		g.drawString("Red Player - Arrow Keys ", 250, 300);
         		g.drawString("Blue Player - WASD ", 275, 350);
+        		g.drawString("Press Space to start", 270, 450);
             	}
     	}
         		
@@ -215,23 +218,31 @@ public class Main extends JPanel implements KeyListener {
     // ===== KEY PRESS =====
 
     public void keyPressed(KeyEvent e) {
-    	// Select game mode
-    	if (e.getKeyCode() == KeyEvent.VK_1) {
-        	mode = 1;
-            startGame();
-        }
-        if (e.getKeyCode() == KeyEvent.VK_2) {
-        	mode = 2;
-            startGame();
-        }
-        if (e.getKeyCode() == KeyEvent.VK_3) {
-        	mode = 3;
-            startGame();
-        }
-
-
+    	// Select game mode from WELCOM screen
+    	if(gameState == WELCOME) {
+	    	if (e.getKeyCode() == KeyEvent.VK_1) {
+	        	mode = 1;
+	        	gameState = INSTRUCTIONS;
+	        }
+	        if (e.getKeyCode() == KeyEvent.VK_2) {
+	        	mode = 2;
+	        	gameState = INSTRUCTIONS;
+	        }
+	        if (e.getKeyCode() == KeyEvent.VK_3) {
+	        	mode = 3;
+	        	gameState = INSTRUCTIONS;
+	        }
+    	}
+    	
+    	else if(gameState == INSTRUCTIONS) {
+    		if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+    			gameState = PLAYING;
+    			startGame();
+    		}
+    	}
+    	
         // Only move during gameplay
-        if (gameState == PLAYING) {
+    	else if (gameState == PLAYING) {
 			if (e.getKeyCode() == KeyEvent.VK_UP){
 			    player[0].up = true;      
 			}
