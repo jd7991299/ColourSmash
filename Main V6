@@ -15,6 +15,7 @@ public class Main extends JPanel implements KeyListener {
     Timer gameTimer;
     long currentTime;
     long startTime;
+    int seconds;
 
     // ===== GAME STATES =====
 
@@ -128,11 +129,14 @@ public class Main extends JPanel implements KeyListener {
 		        if(currentTime >= 15000 + startTime) {
 		        	gameState = WIN;
 		        }
+		        
+		        seconds = 15 - (int)((currentTime - startTime) / 1000);
 		    } else {
 	        	currentTime = System.currentTimeMillis();
 		        if(currentTime >= 30000 + startTime) {
 		        	gameState = WIN;
 		        }
+	        seconds = 30 - (int)((currentTime - startTime) / 1000);
 		    }//else
         }//if
 
@@ -149,9 +153,9 @@ public class Main extends JPanel implements KeyListener {
         	g.drawImage(backgroundPic, 0, 0, this);
             g.setFont(new Font("Arial", Font.BOLD, 50));
             g.setColor(Color.blue);
-            g.drawString("Colour", 230, 220);
+            g.drawString("Colour", 235, 220);
             g.setColor(Color.red);
-            g.drawString("Smash", 395, 220);
+            g.drawString("Smash", 415, 220);
             g.setFont(new Font("Arial", Font.BOLD, 24));
             g.setColor(Color.white);
             g.drawString("Timed Mode - Press 1 to Play", 235, 300);
@@ -196,7 +200,6 @@ public class Main extends JPanel implements KeyListener {
         		
         // ===== PLAY SCREEN =====
         else if (gameState == PLAYING) {
-        	
         	//draw tiles
         	for(int i = 0; i < tiles.length; i++) {
             	for(int j = 0; j < tiles[i].length; j++) {
@@ -204,10 +207,15 @@ public class Main extends JPanel implements KeyListener {
             		g.fillRect(tiles[i][j].x, tiles[i][j].y, Tile.WIDTH, Tile.HEIGHT);	
             	}
             }
+        	
             // Draw player
             g.drawImage(player[0].currentImage, player[0].x, player[0].y, player[0].size, player[0].size, this);
             g.drawImage(player[1].currentImage, player[1].x, player[1].y, player[1].size, player[1].size, this);
             
+            // Draw timer
+            g.setColor(Color.blue);
+            g.setFont(new Font("Arial", Font.BOLD, 24));
+            g.drawString("Time:" + seconds, 350, 35);
         }
 
         // ===== WIN SCREEN =====
@@ -276,7 +284,7 @@ public class Main extends JPanel implements KeyListener {
 			if (e.getKeyCode() == KeyEvent.VK_D) {
 				player[1].right = true;
 			}
-
+			
         } // if
     } // keyPressed
 
