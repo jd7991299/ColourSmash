@@ -1,0 +1,476 @@
+package main;
+
+import javax.swing.*;
+import entity.Tile;
+import entity.Player;
+import java.awt.*;
+import java.awt.event.*;
+
+public class Main extends JPanel implements KeyListener {
+    // ===== WINDOW SETTINGS =====
+
+    static final int WIDTH = 800;
+    static final int HEIGHT = 600;
+    
+    Timer gameTimer;
+    long currentTime;
+    long startTime;
+    int seconds;
+
+    // ===== GAME STATES =====
+
+    final int WELCOME = 0;
+    final int INSTRUCTIONS = 1;
+    final int PLAYING = 2;
+    final int WIN = 3;
+    
+    int mode = 0;
+    int gameState = WELCOME;
+  
+    // ===== PLAYER VARIABLES =====
+    
+    Player [] player;
+    Toolkit tk = Toolkit.getDefaultToolkit();
+    
+    //background tiles
+    Tile[][] tiles;
+    
+    // ===== BACKGROUND IMAGE =====
+    Image backgroundPic;
+
+    // ===== MAIN METHOD =====
+
+    public static void main(String[] args) {
+        JFrame window = new JFrame("Colour Smash");
+
+        Main gamePanel = new Main();
+
+        window.add(gamePanel);
+        window.setSize(WIDTH, HEIGHT);
+        window.setResizable(false);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setVisible(true);
+
+        window.addKeyListener(gamePanel);
+    } // main
+
+    // ===== CONSTRUCTOR =====
+
+    public Main() {
+        setBackground(Color.WHITE);
+        
+        //initialize players
+        player = new Player[2];
+        
+        for(int i = 0;i < player.length; i++) {
+        	player[i] = new Player();
+        }
+        
+        player[0].color = Color.RED;
+        player[1].color = Color.BLUE;
+        
+        //load images
+        player[0].imageUp = tk.getImage("redPaintBrush.png");
+        player[0].imageDown = tk.getImage("redPaintBrush.png");
+        player[0].imageLeft = tk.getImage("redPaintBrushMoveLeft.png");
+        player[0].imageRight = tk.getImage("redPaintBrushMoveRight.png");
+        player[1].imageUp = tk.getImage("bluePaintBrush.png");
+        player[1].imageDown = tk.getImage("bluePaintBrush.png");
+        player[1].imageLeft = tk.getImage("bluePaintBrushMoveLeft.png");
+        player[1].imageRight = tk.getImage("bluePaintBrushMoveRight.png");
+        backgroundPic = tk.getImage("backgroundImage.png");
+        
+        //initialize tiles
+        tiles = new Tile[400][300];
+        for(int i = 0; i < tiles.length; i++) {
+        	for(int j = 0; j < tiles[i].length; j++) {
+				tiles[i][j] = new Tile();
+				tiles[i][j].setColour(Color.WHITE);
+				tiles[i][j].setX(i * (Tile.WIDTH));
+				tiles[i][j].setY(j * (Tile.HEIGHT));	
+        	}//for
+        }//for
+        
+        // Game loop runs every 10 ms
+        gameTimer = new Timer(10, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+               gameLoop();
+            }
+        });
+
+        gameTimer.start(); // start loop
+    }
+    
+    public void gameLoop() {
+        if (gameState == PLAYING) {
+            keepPlayerOnScreen();
+            keepPlayersApart();
+        	for(int i = 0; i < player.length; i++) {
+        		if (player[i].up && !player[i].down){
+    			    player[i].movePlayerUp();   
+    			    player[i].setCurrentImage(player[i].imageUp);
+    			} else if (player[i].down && !player[i].up){
+    			    player[i].movePlayerDown();   
+    			    player[i].setCurrentImage(player[i].imageDown);
+    			}
+        		if (player[i].left && !player[i].right) {
+    			    player[i].movePlayerLeft();   
+    			    player[i].setCurrentImage(player[i].imageLeft);
+    			} else if(player[i].right && !player[i].left) {
+    			    player[i].movePlayerRight();   
+    			    player[i].setCurrentImage(player[i].imageRight);
+    			}
+        		colourTile(player[i], tiles);
+        	}//for   
+        	
+        	//timer
+	        if(mode == 3) {
+		        currentTime = System.currentTimeMillis();
+		        if(currentTime >= 15000 + startTime) {
+		        	gameState = WIN;
+		        }
+		        
+		        seconds = 15 - (int)((currentTime - startTime) / 1000);
+		    } else {
+	        	currentTime = System.currentTimeMillis();
+		        if(currentTime >= 30000 + startTime) {
+		        	gameState = WIN;
+		        }
+	        seconds = 30 - (int)((currentTime - startTime) / 1000);
+		    }//else
+        }//if
+
+        repaint(); // redraw screen every frame
+    } // gameLoop
+
+    // ===== DRAW SCREEN =====
+
+    public void paintComponent(Graphics g){
+        super.paintComponent(g);
+
+        // ===== WELCOME SCREEN =====
+        if (gameState == WELCOME) {
+        	g.drawImage(backgroundPic, 0, 0, this);
+            g.setFont(new Font("Arial", Font.BOLD, 50));
+            g.setColor(Color.blue);
+            g.drawString("Colour", 235, 220);
+            g.setColor(Color.red);
+            g.drawString("Smash", 415, 220);
+            g.setFont(new Font("Arial", Font.BOLD, 24));
+            g.setColor(Color.white);
+            g.drawString("Timed Mode - Press 1 to Play", 235, 300);
+            g.drawString("2v2 Battle - Press 2 to Play", 250, 350);
+            g.drawString("Sumo Battle - Press 3 to Play", 235, 400);
+        }
+
+        // ===== INSTRUCTION SCREEN =====
+        else if(gameState == INSTRUCTIONS) {
+        	if(mode == 1) {
+        		g.setFont(new Font("Arial", Font.BOLD, 24));
+        		g.drawString("Timed Battle Instructions", 250, 100);
+        		g.setFont(new Font("Arial", Font.PLAIN, 24));
+        		g.drawString("In the span of 30 seconds, 2 players compete to paint ", 100, 200);
+        		g.drawString("as much of the screen as possible. ", 200, 250);
+        		
+        		g.drawString("Red Player - Arrow Keys ", 250, 300);
+        		g.drawString("Blue Player - WASD ", 275, 350);
+        		g.drawString("Press Space to start", 270, 450);
+        	}
+    		else if(mode == 2) {
+        		g.setFont(new Font("Arial", Font.BOLD, 24));
+        		g.drawString("2v2 Battle Instructions", 250, 100);
+        		g.setFont(new Font("Arial", Font.PLAIN, 24));
+        		g.drawString("Timed Battle with abilities and health points. ", 150, 200);
+        		
+        		g.drawString("Red Player - Arrow Keys ", 250, 300);
+        		g.drawString("Blue Player - WASD ", 275, 350);
+        		g.drawString("Press Space to start", 270, 450);
+        	}
+    		else if(mode == 3) {
+        		g.setFont(new Font("Arial", Font.BOLD, 24));
+        		g.drawString("Sumo Battle Instructions", 250, 100);
+        		g.setFont(new Font("Arial", Font.PLAIN, 24));
+        		g.drawString("Standard mode with the ability to push the other player around.", 75, 200);
+        		
+        		g.drawString("Red Player - Arrow Keys ", 250, 300);
+        		g.drawString("Blue Player - WASD ", 275, 350);
+        		g.drawString("Press Space to start", 270, 450);
+            	}
+    	}
+        		
+        // ===== PLAY SCREEN =====
+        else if (gameState == PLAYING) {
+        	//draw tiles
+        	for(int i = 0; i < tiles.length; i++) {
+            	for(int j = 0; j < tiles[i].length; j++) {
+                	g.setColor(tiles[i][j].getColour());
+            		g.fillRect(tiles[i][j].x, tiles[i][j].y, Tile.WIDTH, Tile.HEIGHT);	
+            	}
+            }
+        	
+            // Draw player
+            g.drawImage(player[0].currentImage, player[0].x, player[0].y, player[0].size, player[0].size, this);
+            g.drawImage(player[1].currentImage, player[1].x, player[1].y, player[1].size, player[1].size, this);
+            
+            // Draw timer
+            g.setColor(Color.blue);
+            g.setFont(new Font("Arial", Font.BOLD, 24));
+            g.drawString("Time:" + seconds, 350, 35);
+        }
+
+        // ===== WIN SCREEN =====
+        else if (gameState == WIN) {
+            showResult(g);
+        } // win screen
+    } // paintComponent
+
+
+    // ===== KEY PRESS =====
+
+    public void keyPressed(KeyEvent e) {
+    	// Select game mode from WELCOM screen
+    	if(gameState == WELCOME) {
+	    	if (e.getKeyCode() == KeyEvent.VK_1) {
+	        	mode = 1;
+	        	gameState = INSTRUCTIONS;
+	        }
+	        if (e.getKeyCode() == KeyEvent.VK_2) {
+	        	mode = 2;
+	        	gameState = INSTRUCTIONS;
+	        }
+	        if (e.getKeyCode() == KeyEvent.VK_3) {
+	        	mode = 3;
+	        	gameState = INSTRUCTIONS;
+	        }
+    	}
+    	
+    	else if(gameState == INSTRUCTIONS) {
+    		if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+    			gameState = PLAYING;
+    			startGame();
+    		}
+    	}
+    	
+        // Only move during gameplay
+    	else if (gameState == PLAYING) {
+			if (e.getKeyCode() == KeyEvent.VK_UP){
+			    player[0].up = true;
+			    if(player[0].momentum < 0) {
+					player[0].momentum = 0;
+				}
+			    if(player[0].momentum < 5) {
+			    player[0].momentum +=1;
+			    }
+			    System.out.println(player[0].momentum);
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+				player[0].down = true;   
+				if(player[0].momentum > 0) {
+					player[0].momentum = 0;
+				}
+				if(player[0].momentum > -5) {
+				    player[0].momentum -=1;
+				}
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+				player[0].left = true;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+				player[0].right = true; 
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_W){
+				player[1].up = true;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_S) {
+				player[1].down = true;
+			}
+			 
+			if (e.getKeyCode() == KeyEvent.VK_A) {
+				player[1].left = true;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_D) {
+				player[1].right = true;
+			}
+			
+        } // if
+    } // keyPressed
+
+    public void keyReleased(KeyEvent e){
+    	if (gameState == PLAYING) {
+			if (e.getKeyCode() == KeyEvent.VK_UP){
+			    player[0].up = false;      
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+				player[0].down = false;          
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+				player[0].left = false;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+				player[0].right = false; 
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_W){
+				player[1].up = false;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_S) {
+				player[1].down = false;
+			}
+			 
+			if (e.getKeyCode() == KeyEvent.VK_A) {
+				player[1].left = false;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_D) {
+				player[1].right = false;
+			}
+        } // if
+    } // keyPressed
+    	
+
+    public void keyTyped(KeyEvent e){}
+
+    //set initial states
+    public void startGame() {
+
+    	if(mode == 3) {
+        	player[0].moveAmount = 3;
+        	player[1].moveAmount = 3;
+        }
+        else {
+        	player[0].moveAmount = 2;
+        	player[1].moveAmount = 2;
+        }//if else
+    	
+    	//initial states
+        player[0].x = 100;
+        player[0].y = 100;
+        
+        player[1].x = 500;
+        player[1].y = 100;
+      
+        for(int i = 0; i < player.length; i++) {
+        	player[i].up = false;
+        	player[i].down = false;
+        	player[i].left = false;
+        	player[i].right = false;
+        	player[i].setCurrentImage(player[i].imageDown);
+        }//for
+
+    	gameState = PLAYING;
+    	startTime = System.currentTimeMillis();
+    	repaint();
+    	
+    } // startGame
+
+    //colour the background behind character
+	public void colourTile(Player player, Tile[][] tiles) {
+		for(int i = player.x; i < player.x + player.size;i++) {
+			for(int j = player.y; j < player.y + player.size; j++) {
+	    		tiles[i / 2][j / 2].setColour(player.color);
+	    	}//if
+		}//for
+    } // colourTile
+
+    // ===== KEEP PLAYER ON SCREEN =====
+    public void keepPlayerOnScreen() {
+    	for(int i = 0; i < player.length; i++) {
+	    	if(player[i].x <= 2) {
+	    		player[i].x = 2;
+	    	}
+	    	
+	    	if(player[i].x > WIDTH - (20 + player[i].size)) {
+	    		player[i].x = WIDTH - (20 + player[i].size);
+	    	}
+	    	
+	    	if(player[i].y <= 2) {
+	    		player[i].y = 2;
+	    	}
+	    	
+	    	if(player[i].y > HEIGHT - 2*player[i].size) {
+	    		player[i].y = HEIGHT - 2*player[i].size;
+	    	}
+    	}
+    } // keepPlayerOnScreen
+    
+    public void keepPlayersApart() {
+    	if((player[0].y + player[0].size > player[1].y && player[0].y < player[1].y) && (player[0].x + player[0].size > player[1].x && player[1].x + player[1].size > player[0].x)) {
+    		player[0].down = false;
+    		player[1].up = false;
+    		
+    		player[0].y -= 3;
+    		player[1].y += 3;
+    		
+    	} else if((player[1].y + player[1].size > player[0].y && player[1].y < player[0].y) && (player[1].x + player[1].size > player[0].x && player[0].x + player[0].size > player[1].x)) {
+    		player[0].up = false;
+    		player[1].down = false;
+    		
+    		player[0].y += 3;
+    		player[1].y -= 3;
+    	} 
+    	if((player[0].x + player[0].size > player[1].x && player[0].x < player[1].x) && (player[0].y + player[0].size > player[1].y && player[1].y + player[1].size > player[0].y)) {
+    		player[0].right = false;
+    		player[1].left = false;
+    		
+    		player[0].x -= 3;
+    		player[1].x += 3;
+    	} else if((player[1].x + player[1].size > player[0].x && player[1].x < player[0].x) && (player[1].y + player[1].size > player[0].y && player[0].y + player[0].size > player[1].y)){
+    		player[0].left = false;
+    		player[1].right = false;
+    		
+    		player[0].x += 3;
+    		player[1].x -= 3;
+    	}
+    } // keepPlayersApart
+    
+    public void showResult(Graphics g) {
+        //  super.paintComponent(g);
+      	
+      	int countRed = 0;
+      	int countBlue = 0;
+      	int totalColouredTiles = 0;
+      	double percentRed = 0.0;
+      	double percentBlue = 0.0;
+      	
+      	for(int i = 0; i < tiles.length; i++) {
+          	for(int j = 0; j < tiles[i].length; j++) {
+              	if(tiles[i][j].getColour().equals(Color.RED)) {
+              		countRed++;
+                  	totalColouredTiles++;
+              	} else if(tiles[i][j].getColour().equals(Color.BLUE)) {
+              		countBlue++;
+                  	totalColouredTiles++;
+              	}//if
+          	}//for
+          }//for
+      	
+      	percentRed = Math.round(1000.0 * countRed / totalColouredTiles) / 10.0;
+      	percentBlue = Math.round(1000.0 * countBlue / totalColouredTiles) / 10.0;
+      	
+      	g.setFont(new Font("Arial", Font.BOLD, 36));
+      	g.setColor(Color.red);
+      	g.drawString(percentRed + "%", 100, 150);
+      	g.setColor(Color.BLUE);
+      	g.drawString(percentBlue + "%", 250, 150);
+		
+      	if(countRed > countBlue) {
+      		g.setColor(Color.red);
+      		g.drawString("RED WINS!", 290, 240);
+		}
+      	else {
+      		g.setColor(Color.blue);
+		  	g.drawString("BLUE WINS!", 290, 240);
+      	}
+      	
+  	}//showResult
+} // class
