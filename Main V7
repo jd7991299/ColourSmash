@@ -19,13 +19,14 @@ public class Main extends JPanel implements KeyListener {
 
     // ===== GAME STATES =====
 
-    final int WELCOME = 0;
+    final int MENU = 0;
     final int INSTRUCTIONS = 1;
     final int PLAYING = 2;
-    final int WIN = 3;
+    final int RESULT = 3;
     
     int mode = 0;
-    int gameState = WELCOME;
+    int gameState = MENU;
+    int gameTime = 0;
   
     // ===== PLAYER VARIABLES =====
     
@@ -71,11 +72,11 @@ public class Main extends JPanel implements KeyListener {
         
         //load images
         player[0].imageUp = tk.getImage("redPaintBrush.png");
-        player[0].imageDown = tk.getImage("redPaintBrush.png");
+        player[0].imageDown = tk.getImage("redPaintBrushMoveDown.png");
         player[0].imageLeft = tk.getImage("redPaintBrushMoveLeft.png");
         player[0].imageRight = tk.getImage("redPaintBrushMoveRight.png");
         player[1].imageUp = tk.getImage("bluePaintBrush.png");
-        player[1].imageDown = tk.getImage("bluePaintBrush.png");
+        player[1].imageDown = tk.getImage("bluePaintBrushMoveDown.png");
         player[1].imageLeft = tk.getImage("bluePaintBrushMoveLeft.png");
         player[1].imageRight = tk.getImage("bluePaintBrushMoveRight.png");
         backgroundPic = tk.getImage("backgroundImage.png");
@@ -85,7 +86,6 @@ public class Main extends JPanel implements KeyListener {
         for(int i = 0; i < tiles.length; i++) {
         	for(int j = 0; j < tiles[i].length; j++) {
 				tiles[i][j] = new Tile();
-				tiles[i][j].setColour(Color.WHITE);
 				tiles[i][j].setX(i * (Tile.WIDTH));
 				tiles[i][j].setY(j * (Tile.HEIGHT));	
         	}//for
@@ -124,22 +124,13 @@ public class Main extends JPanel implements KeyListener {
         	}//for   
         	
         	//timer
-	        if(mode == 3) {
-		        currentTime = System.currentTimeMillis();
-		        if(currentTime >= 15000 + startTime) {
-		        	gameState = WIN;
-		        }
-		        
-		        seconds = 15 - (int)((currentTime - startTime) / 1000);
-		    } else {
-	        	currentTime = System.currentTimeMillis();
-		        if(currentTime >= 30000 + startTime) {
-		        	gameState = WIN;
-		        }
-	        seconds = 30 - (int)((currentTime - startTime) / 1000);
-		    }//else
+	        currentTime = System.currentTimeMillis();
+	        if(currentTime >= startTime + gameTime*1000) {
+	        	gameState = RESULT;
+	        }//if
+	        
+	        seconds = gameTime - (int)((currentTime - startTime) / 1000);
         }//if
-
         repaint(); // redraw screen every frame
     } // gameLoop
 
@@ -148,8 +139,8 @@ public class Main extends JPanel implements KeyListener {
     public void paintComponent(Graphics g){
         super.paintComponent(g);
 
-        // ===== WELCOME SCREEN =====
-        if (gameState == WELCOME) {
+        // ===== MENU SCREEN =====
+        if (gameState == MENU) {
         	g.drawImage(backgroundPic, 0, 0, this);
             g.setFont(new Font("Arial", Font.BOLD, 50));
             g.setColor(Color.blue);
@@ -158,8 +149,8 @@ public class Main extends JPanel implements KeyListener {
             g.drawString("Smash", 415, 220);
             g.setFont(new Font("Arial", Font.BOLD, 24));
             g.setColor(Color.white);
-            g.drawString("Timed Mode - Press 1 to Play", 235, 300);
-            g.drawString("2v2 Battle - Press 2 to Play", 250, 350);
+            g.drawString("Timed Battle - Press 1 to Play", 235, 300);
+            g.drawString("Item Battle - Press 2 to Play", 250, 350);
             g.drawString("Sumo Battle - Press 3 to Play", 235, 400);
         }
 
@@ -167,35 +158,48 @@ public class Main extends JPanel implements KeyListener {
         else if(gameState == INSTRUCTIONS) {
         	if(mode == 1) {
         		g.setFont(new Font("Arial", Font.BOLD, 24));
-        		g.drawString("Timed Battle Instructions", 250, 100);
+        		g.drawString("Timed Battle", 320, 100);
         		g.setFont(new Font("Arial", Font.PLAIN, 24));
-        		g.drawString("In the span of 30 seconds, 2 players compete to paint ", 100, 200);
-        		g.drawString("as much of the screen as possible. ", 200, 250);
+        		g.drawString("Paint as much of the screen as possible", 170, 150);
+        		g.drawString("before the timer runs out!", 250, 200);
         		
-        		g.drawString("Red Player - Arrow Keys ", 250, 300);
-        		g.drawString("Blue Player - WASD ", 275, 350);
+        		g.setColor(Color.RED);
+        		g.drawString("Red Player - WASD", 280, 300);
+        		g.setColor(Color.BLUE);
+        		g.drawString("Blue Player - Arrows ", 275, 350);
+        		g.setColor(Color.BLACK);
         		g.drawString("Press Space to start", 270, 450);
         	}
     		else if(mode == 2) {
         		g.setFont(new Font("Arial", Font.BOLD, 24));
-        		g.drawString("2v2 Battle Instructions", 250, 100);
+        		g.drawString("Item Battle", 320, 100);
         		g.setFont(new Font("Arial", Font.PLAIN, 24));
-        		g.drawString("Timed Battle with abilities and health points. ", 150, 200);
+        		g.drawString("Use items to dominate the other brush!", 180, 150);
+        		g.drawString("Paint as much of the screen as possible", 170, 200);
+        		g.drawString("before the timer runs out!", 250, 250);
         		
-        		g.drawString("Red Player - Arrow Keys ", 250, 300);
-        		g.drawString("Blue Player - WASD ", 275, 350);
+        		g.setColor(Color.RED);
+        		g.drawString("Red Player - WASD", 280, 330);
+        		g.setColor(Color.BLUE);
+        		g.drawString("Blue Player - Arrows ", 275, 380);
+        		g.setColor(Color.BLACK);
         		g.drawString("Press Space to start", 270, 450);
         	}
     		else if(mode == 3) {
         		g.setFont(new Font("Arial", Font.BOLD, 24));
-        		g.drawString("Sumo Battle Instructions", 250, 100);
+        		g.drawString("Sumo Battle", 320, 100);
         		g.setFont(new Font("Arial", Font.PLAIN, 24));
-        		g.drawString("Standard mode with the ability to push the other player around.", 75, 200);
+        		g.drawString("Push the other brush!", 270, 150);
+        		g.drawString("Paint as much of the screen as possible", 170, 200);
+        		g.drawString("before the timer runs out!", 250, 250);
         		
-        		g.drawString("Red Player - Arrow Keys ", 250, 300);
-        		g.drawString("Blue Player - WASD ", 275, 350);
+        		g.setColor(Color.RED);
+        		g.drawString("Red Player - WASD", 280, 330);
+        		g.setColor(Color.BLUE);
+        		g.drawString("Blue Player - Arrows ", 275, 380);
+        		g.setColor(Color.BLACK);
         		g.drawString("Press Space to start", 270, 450);
-            	}
+            }
     	}
         		
         // ===== PLAY SCREEN =====
@@ -219,7 +223,7 @@ public class Main extends JPanel implements KeyListener {
         }
 
         // ===== WIN SCREEN =====
-        else if (gameState == WIN) {
+        else if (gameState == RESULT) {
             showResult(g);
         } // win screen
     } // paintComponent
@@ -229,17 +233,20 @@ public class Main extends JPanel implements KeyListener {
 
     public void keyPressed(KeyEvent e) {
     	// Select game mode from WELCOM screen
-    	if(gameState == WELCOME) {
+    	if(gameState == MENU) {
 	    	if (e.getKeyCode() == KeyEvent.VK_1) {
 	        	mode = 1;
+	        	gameTime = 30;
 	        	gameState = INSTRUCTIONS;
 	        }
 	        if (e.getKeyCode() == KeyEvent.VK_2) {
 	        	mode = 2;
+	        	gameTime = 30;
 	        	gameState = INSTRUCTIONS;
 	        }
 	        if (e.getKeyCode() == KeyEvent.VK_3) {
 	        	mode = 3;
+	        	gameTime = 15;
 	        	gameState = INSTRUCTIONS;
 	        }
     	}
@@ -253,86 +260,77 @@ public class Main extends JPanel implements KeyListener {
     	
         // Only move during gameplay
     	else if (gameState == PLAYING) {
-			if (e.getKeyCode() == KeyEvent.VK_UP){
-			    player[0].up = true;
-			    if(player[0].momentum < 0) {
-					player[0].momentum = 0;
-				}
-			    if(player[0].momentum < 5) {
-			    player[0].momentum +=1;
-			    }
-			    System.out.println(player[0].momentum);
-			}
-			
-			if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-				player[0].down = true;   
-				if(player[0].momentum > 0) {
-					player[0].momentum = 0;
-				}
-				if(player[0].momentum > -5) {
-				    player[0].momentum -=1;
-				}
-			}
-			
-			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-				player[0].left = true;
-			}
-			
-			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-				player[0].right = true; 
-			}
-			
-			if (e.getKeyCode() == KeyEvent.VK_W){
-				player[1].up = true;
+    		if (e.getKeyCode() == KeyEvent.VK_W){
+				player[0].up = true;
 			}
 			
 			if (e.getKeyCode() == KeyEvent.VK_S) {
-				player[1].down = true;
+				player[0].down = true;
 			}
 			 
 			if (e.getKeyCode() == KeyEvent.VK_A) {
-				player[1].left = true;
+				player[0].left = true;
 			}
 			
 			if (e.getKeyCode() == KeyEvent.VK_D) {
-				player[1].right = true;
+				player[0].right = true;
+			}
+    		
+    		if (e.getKeyCode() == KeyEvent.VK_UP){
+			    player[1].up = true;      
 			}
 			
-        } // if
+			if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+				player[1].down = true;     
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+				player[1].left = true;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+				player[1].right = true; 
+			}
+        } 
+
+    	else if(gameState == RESULT) {
+    		if(e.getKeyCode() == KeyEvent.VK_SPACE) {
+    			gameState = MENU;
+    		}
+    	}
     } // keyPressed
 
     public void keyReleased(KeyEvent e){
     	if (gameState == PLAYING) {
-			if (e.getKeyCode() == KeyEvent.VK_UP){
-			    player[0].up = false;      
-			}
-			
-			if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-				player[0].down = false;          
-			}
-			
-			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-				player[0].left = false;
-			}
-			
-			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-				player[0].right = false; 
-			}
-			
 			if (e.getKeyCode() == KeyEvent.VK_W){
-				player[1].up = false;
+				player[0].up = false;
 			}
 			
 			if (e.getKeyCode() == KeyEvent.VK_S) {
-				player[1].down = false;
+				player[0].down = false;
 			}
 			 
 			if (e.getKeyCode() == KeyEvent.VK_A) {
-				player[1].left = false;
+				player[0].left = false;
 			}
 			
 			if (e.getKeyCode() == KeyEvent.VK_D) {
-				player[1].right = false;
+				player[0].right = false;
+			}
+    		if (e.getKeyCode() == KeyEvent.VK_UP){
+			    player[1].up = false;      
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+				player[1].down = false;          
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+				player[1].left = false;
+			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+				player[1].right = false; 
 			}
         } // if
     } // keyPressed
@@ -343,21 +341,18 @@ public class Main extends JPanel implements KeyListener {
     //set initial states
     public void startGame() {
 
-    	if(mode == 3) {
-        	player[0].moveAmount = 3;
-        	player[1].moveAmount = 3;
-        }
-        else {
-        	player[0].moveAmount = 2;
-        	player[1].moveAmount = 2;
-        }//if else
-    	
     	//initial states
         player[0].x = 100;
         player[0].y = 100;
         
-        player[1].x = 500;
+        player[1].x = 660;
         player[1].y = 100;
+        
+        for(int i = 0; i < tiles.length; i++) {
+        	for(int j = 0; j < tiles[i].length; j++) {
+				tiles[i][j].setColour(Color.WHITE);
+        	}//for
+        }//for
       
         for(int i = 0; i < player.length; i++) {
         	player[i].up = false;
@@ -459,18 +454,24 @@ public class Main extends JPanel implements KeyListener {
       	
       	g.setFont(new Font("Arial", Font.BOLD, 36));
       	g.setColor(Color.red);
-      	g.drawString(percentRed + "%", 100, 150);
+      	g.drawString(percentRed + "%", 260, 150);
       	g.setColor(Color.BLUE);
-      	g.drawString(percentBlue + "%", 250, 150);
+      	g.drawString(percentBlue + "%", 430, 150);
 		
       	if(countRed > countBlue) {
       		g.setColor(Color.red);
-      		g.drawString("RED WINS!", 290, 240);
+      		g.drawString("RED WINS!", 300, 240);
 		}
-      	else {
+      	else if(countBlue > countRed) {
       		g.setColor(Color.blue);
 		  	g.drawString("BLUE WINS!", 290, 240);
+      	} else {
+      		g.setColor(Color.BLACK);
+		  	g.drawString("TIED!", 350, 240);
       	}
+      	
+      	g.setColor(Color.BLACK);
+      	g.drawString("Press Space to return to menu", 140, 400);
       	
   	}//showResult
 } // class
