@@ -1,0 +1,31 @@
+package entity;
+import java.awt.Color;
+public class Tile {
+	public static final int WIDTH = 2;
+	public static final int HEIGHT = 2;
+	public int x;
+	public int y;
+	Color colour;
+	
+	public Tile() {
+	
+	}
+	
+	public void setX(int num) {
+		this.x = num;
+	}
+	
+	public void setY(int num) {
+		this.y = num;
+	}
+	
+	public Color getColour() {
+		return this.colour;
+	}
+	
+	public void setColour(Color color) {
+		this.colour = color;
+	}
+	
+}
+
