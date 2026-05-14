@@ -3,6 +3,8 @@ package main;
 import javax.swing.*;
 import entity.Tile;
 import entity.Player;
+import entity.Powerup;
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -35,6 +37,9 @@ public class Main extends JPanel implements KeyListener {
     
     //background tiles
     Tile[][] tiles;
+    
+    //powerup
+    Powerup powerup;
     
     // ===== BACKGROUND IMAGE =====
     Image backgroundPic;
@@ -79,6 +84,10 @@ public class Main extends JPanel implements KeyListener {
         player[1].imageDown = tk.getImage("bluePaintBrushMoveDown.png");
         player[1].imageLeft = tk.getImage("bluePaintBrushMoveLeft.png");
         player[1].imageRight = tk.getImage("bluePaintBrushMoveRight.png");
+        
+        powerup.bigPowerup = tk.getImage("bigPowerup.png");
+        powerup.speedPowerup = tk.getImage("speedPowerup.png");
+        
         backgroundPic = tk.getImage("backgroundImage.png");
         
         //initialize tiles
@@ -462,4 +471,9 @@ public class Main extends JPanel implements KeyListener {
       	g.drawString("Press Space to return to menu", 140, 400);
       	
   	}//showResult
+    
+    public void generatePowerup() {
+	    powerup = new Powerup(((int)((Math.random()) * (2)) + 1));
+	    
+	}
 } // class
