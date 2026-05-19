@@ -34,13 +34,14 @@ public class Main extends JPanel implements KeyListener {
     
     Player [] player;
     Toolkit tk = Toolkit.getDefaultToolkit();
-    
+    int timeCollected = 0;
     //background tiles
     Tile[][] tiles;
     
     //powerup
     Powerup powerup;
     boolean hasRun = false;
+    boolean hasBuff = false;
     
     Image backgroundPic;
 
@@ -146,9 +147,18 @@ public class Main extends JPanel implements KeyListener {
 	        
 	        seconds = gameTime - (int)((currentTime - startTime) / 1000);
 	        
-	        if(seconds % 5 == 0 && !hasRun) {
+	        if(seconds % 5 == 0 && !hasRun && hasBuff == false) {
 	        	generatePowerup();
 	        }
+	        if(timeCollected - seconds >= 5) {
+	        	player[0].size = 60;
+	        	player[1].size = 60;
+	        	player[0].moveAmount = 2;
+	        	player[1].moveAmount = 2;
+	        	
+	        	hasBuff = false;
+	        }
+	        
         }//if
         repaint(); // redraw screen every frame
     } // gameLoop
@@ -268,7 +278,7 @@ public class Main extends JPanel implements KeyListener {
 	        }
 	        if (e.getKeyCode() == KeyEvent.VK_2) {
 	        	mode = 2;
-	        	gameTime = 30;
+	        	gameTime = 60;
 	        	gameState = INSTRUCTIONS;
 	        }
 	        if (e.getKeyCode() == KeyEvent.VK_3) {
@@ -374,6 +384,9 @@ public class Main extends JPanel implements KeyListener {
         
         player[1].x = 560;
         player[1].y = 260;
+        
+        player[0].size = 40;
+        player[1].size = 40;
         
         for(int i = 0; i < tiles.length; i++) {
         	for(int j = 0; j < tiles[i].length; j++) {
@@ -503,9 +516,12 @@ public class Main extends JPanel implements KeyListener {
 		if((player.y + player.size > powerup.y && player.y < powerup.y) && (player.x + player.size > powerup.x && powerup.x + powerup.size > player.x)) {
 			if(powerup.type == 1) {
 				player.size *= 2;
+				hasBuff = true;
 			} else {
 				player.moveAmount *= 2;
+				hasBuff = true;
 			}
+			timeCollected = seconds;
 			hasRun = false;
 		}//if
     } //collectItem
