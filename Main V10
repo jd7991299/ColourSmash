@@ -275,7 +275,7 @@ public class Main extends JPanel implements KeyListener {
     	if(gameState == MENU) {
 	    	if (e.getKeyCode() == KeyEvent.VK_1) {
 	        	mode = 1;
-	        	gameTime = 60;
+	        	gameTime = 30;
 	        	gameState = INSTRUCTIONS;
 	        }
 	        if (e.getKeyCode() == KeyEvent.VK_2) {
@@ -283,11 +283,12 @@ public class Main extends JPanel implements KeyListener {
 	        	gameTime = 60;
 	        	gameState = INSTRUCTIONS;
 	        }
-	        if (e.getKeyCode() == KeyEvent.VK_3) {
+	      /*  if (e.getKeyCode() == KeyEvent.VK_3) {
 	        	mode = 3;
 	        	gameTime = 15;
 	        	gameState = INSTRUCTIONS;
 	        }
+	        */
     	}
     	
     	else if(gameState == INSTRUCTIONS) {
@@ -527,9 +528,10 @@ public class Main extends JPanel implements KeyListener {
     } //collectItem
 	
 	public void colourBomb(Player player) {
-		for(int i = powerup.x - 60; i < powerup.x + powerup.size + 60; i++) {
-			for(int j = powerup.y - 60; j < powerup.y + powerup.size + 60; j++) {
-				if((i - (powerup.x + 20))*(i - (powerup.x + 20)) + (j - (powerup.y + 20))*(j - (powerup.y + 20)) <= 80*80 && i >= 0 && i < WIDTH && j >= 0 && j < HEIGHT) {
+		int r = 120;
+		for(int i = powerup.x - r + powerup.size / 2; i < powerup.x + powerup.size / 2 + r; i++) {
+			for(int j = powerup.y - r + powerup.size / 2; j < powerup.y + powerup.size / 2 + r; j++) {
+				if((i - (powerup.x + powerup.size / 2))*(i - (powerup.x + powerup.size / 2)) + (j - (powerup.y + powerup.size / 2))*(j - (powerup.y + powerup.size / 2)) <= r*r && i >= 0 && i < WIDTH && j >= 0 && j < HEIGHT) {
 					tiles[i / 2][j / 2].setColour(player.color);
 				}//if
 	    	}//for
