@@ -10,14 +10,15 @@ import java.awt.event.*;
 
 public class Main extends JPanel implements KeyListener {
     // ===== WINDOW SETTINGS =====
-
     static final int WIDTH = 800;
     static final int HEIGHT = 600;
     
+    //timer
     Timer gameTimer;
     long currentTime;
     long startTime;
     int seconds;
+    int gameTime;
 
     // ===== GAME STATES =====
 
@@ -26,14 +27,16 @@ public class Main extends JPanel implements KeyListener {
     final int PLAYING = 2;
     final int RESULT = 3;
     
-    int mode = 0;
+    final int TIMED = 1;
+    final int ITEM = 2;
+    final int SUMO = 3;
+    
+    int mode;
     int gameState = MENU;
-    int gameTime = 0;
   
-    // ===== PLAYER VARIABLES =====
+    //player
     
     Player [] player;
-    Toolkit tk = Toolkit.getDefaultToolkit();
     
     //background tiles
     Tile[][] tiles;
@@ -45,25 +48,21 @@ public class Main extends JPanel implements KeyListener {
     int timeCollected = 0;
     
     Image backgroundPic;
+    Toolkit tk = Toolkit.getDefaultToolkit();
 
     // ===== CONSTRUCTOR =====
-
     public Main() {
         setBackground(Color.WHITE);
         
-        //initialize players
+        //initialize entities
         player = new Player[2];
-        
-        for(int i = 0;i < player.length; i++) {
-        	player[i] = new Player();
-        }
-        
+    	player[0] = new Player();
+    	player[1] = new Player();
         player[0].color = Color.RED;
         player[1].color = Color.BLUE;
         
         powerup = new Powerup();
         
-        //initialize tiles
         tiles = new Tile[420][320];
         for(int i = 0; i < tiles.length; i++) {
         	for(int j = 0; j < tiles[i].length; j++) {
@@ -85,6 +84,7 @@ public class Main extends JPanel implements KeyListener {
        
         powerup.bigPowerup = tk.getImage("bigPowerup.png");
         powerup.speedPowerup = tk.getImage("speedPowerup.png");
+        powerup.colourBomb = tk.getImage("colourBomb.png");
        
         backgroundPic = tk.getImage("backgroundImage.png");
 
@@ -96,13 +96,11 @@ public class Main extends JPanel implements KeyListener {
         });
 
         gameTimer.start(); // start loop
-    }
+    }//constructor
     
     // ===== MAIN METHOD =====
-	
 	public static void main(String[] args) {
 	    JFrame window = new JFrame("Colour Smash");
-	
 	    Main gamePanel = new Main();
 	    gamePanel.setPreferredSize(new Dimension(WIDTH, HEIGHT));
 	    window.add(gamePanel);
@@ -110,14 +108,17 @@ public class Main extends JPanel implements KeyListener {
 	    window.setResizable(false);
 	    window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    window.setVisible(true);
-	
 	    window.addKeyListener(gamePanel);
 	} // main
 
+	//game logic
 	public void gameLoop() {
         if (gameState == PLAYING) {
-            keepPlayerOnScreen();
+            //collision check
+        	keepPlayerOnScreen();
             keepPlayersApart();
+            
+            //move players
         	for(int i = 0; i < player.length; i++) {
         		if (player[i].up && !player[i].down){
     			    player[i].movePlayerUp();   
@@ -125,19 +126,20 @@ public class Main extends JPanel implements KeyListener {
     			} else if (player[i].down && !player[i].up){
     			    player[i].movePlayerDown();   
     			    player[i].setCurrentImage(player[i].imageDown);
-    			}
+    			}//if else
         		if (player[i].left && !player[i].right) {
     			    player[i].movePlayerLeft();   
     			    player[i].setCurrentImage(player[i].imageLeft);
     			} else if(player[i].right && !player[i].left) {
     			    player[i].movePlayerRight();   
     			    player[i].setCurrentImage(player[i].imageRight);
-    			}
+    			}//if else
+        		
         		colourTile(player[i], tiles);
         		
         		if(hasRun) {
-    	        	collectItem(player[i], powerup);
-    	        }
+    	        	collectPowerup(player[i], powerup);
+    	        }//if
         	}//for   
         	
         	//timer
@@ -148,26 +150,26 @@ public class Main extends JPanel implements KeyListener {
 	        
 	        seconds = gameTime - (int)((currentTime - startTime) / 1000);
 	        
-	        if(seconds % 5 == 0 && !hasRun && hasBuff == false) {
-	        	generatePowerup();
-	        }
-	        if(timeCollected - seconds >= 5) {
-	        	player[0].size = 60;
-	        	player[1].size = 60;
-	        	player[0].moveAmount = 2;
-	        	player[1].moveAmount = 2;
-	        	
-	        	hasBuff = false;
-	        }
+	        if(mode == ITEM) {
+		        if(seconds % 5 == 0 && !hasRun && !hasBuff) {
+		        	generatePowerup();
+		        }//if
+		        if(timeCollected - seconds >= 5) {
+		        	player[0].size = 60;
+		        	player[1].size = 60;
+		        	player[0].moveAmount = 2;
+		        	player[1].moveAmount = 2;
+		        	
+		        	hasBuff = false;
+		        }//if
+	        }//if
         }//if
-        repaint(); // redraw screen every frame
+        
+        repaint();
     } // gameLoop
 
     // ===== DRAW SCREEN =====
-
     public void paintComponent(Graphics g){
-        super.paintComponent(g);
-
         // ===== MENU SCREEN =====
         if (gameState == MENU) {
         	g.drawImage(backgroundPic, 0, 0, this);
@@ -182,11 +184,11 @@ public class Main extends JPanel implements KeyListener {
             g.drawString("Item Battle - Press 2 to Play", 250, 350);
             g.setColor(Color.GRAY);
             g.drawString("Sumo Battle - Coming Soon!", 235, 400);
-        }
+        }//if
 
         // ===== INSTRUCTION SCREEN =====
         else if(gameState == INSTRUCTIONS) {
-        	if(mode == 1) {
+        	if(mode == TIMED) {
         		g.setColor(Color.BLACK);
         		g.setFont(new Font("Arial", Font.BOLD, 24));
         		g.drawString("Timed Battle", 320, 100);
@@ -200,8 +202,7 @@ public class Main extends JPanel implements KeyListener {
         		g.drawString("Blue Player - Arrows ", 275, 350);
         		g.setColor(Color.BLACK);
         		g.drawString("Press Space to start", 270, 450);
-        	}
-    		else if(mode == 2) {
+        	} else if(mode == ITEM) {
     			g.setColor(Color.BLACK);
         		g.setFont(new Font("Arial", Font.BOLD, 24));
         		g.drawString("Item Battle", 320, 100);
@@ -216,8 +217,7 @@ public class Main extends JPanel implements KeyListener {
         		g.drawString("Blue Player - Arrows ", 275, 380);
         		g.setColor(Color.BLACK);
         		g.drawString("Press Space to start", 270, 450);
-        	}
-    		else if(mode == 3) {
+        	} else if(mode == SUMO) {
         		g.setColor(Color.BLACK);
     			g.setFont(new Font("Arial", Font.BOLD, 24));
         		g.drawString("Sumo Battle", 320, 100);
@@ -232,8 +232,8 @@ public class Main extends JPanel implements KeyListener {
         		g.drawString("Blue Player - Arrows ", 275, 380);
         		g.setColor(Color.BLACK);
         		g.drawString("Press Space to start", 270, 450);
-            }
-    	}
+            }//if
+    	}//if
         		
         // ===== PLAY SCREEN =====
         else if (gameState == PLAYING) {
@@ -242,8 +242,8 @@ public class Main extends JPanel implements KeyListener {
             	for(int j = 0; j < tiles[i].length; j++) {
                 	g.setColor(tiles[i][j].getColour());
             		g.fillRect(tiles[i][j].x, tiles[i][j].y, Tile.SIZE, Tile.SIZE);	
-            	}
-            }
+            	}//for
+            }//for
         	
             // Draw player
             g.drawImage(player[0].currentImage, player[0].x, player[0].y, player[0].size, player[0].size, this);
@@ -254,6 +254,7 @@ public class Main extends JPanel implements KeyListener {
             g.setFont(new Font("Arial", Font.BOLD, 24));
             g.drawString("Time:" + seconds, 350, 35); 
             
+            //draw powerup
             if(hasRun) {
             	g.drawImage(powerup.currentImage, powerup.x, powerup.y, powerup.size, powerup.size, this);
             }
@@ -267,18 +268,17 @@ public class Main extends JPanel implements KeyListener {
 
 
     // ===== KEY PRESS =====
-
     public void keyPressed(KeyEvent e) {
     	// Select game mode from WELCOM screen
     	if(gameState == MENU) {
 	    	if (e.getKeyCode() == KeyEvent.VK_1) {
 	        	mode = 1;
-	        	gameTime = 30;
+	        	gameTime = 60;
 	        	gameState = INSTRUCTIONS;
 	        }
 	        if (e.getKeyCode() == KeyEvent.VK_2) {
 	        	mode = 2;
-	        	gameTime = 30;
+	        	gameTime = 60;
 	        	gameState = INSTRUCTIONS;
 	        }
 	        if (e.getKeyCode() == KeyEvent.VK_3) {
@@ -370,9 +370,8 @@ public class Main extends JPanel implements KeyListener {
 				player[1].right = false; 
 			}
         } // if
-    } // keyPressed
+    } // keyReleased
     	
-
     public void keyTyped(KeyEvent e){}
 
     //set initial states
@@ -405,7 +404,6 @@ public class Main extends JPanel implements KeyListener {
     	gameState = PLAYING;
     	startTime = System.currentTimeMillis();
     	repaint();
-    	
     } // startGame
 
     //colour the background behind character
@@ -413,7 +411,7 @@ public class Main extends JPanel implements KeyListener {
 		for(int i = player.x; i < player.x + player.size;i++) {
 			for(int j = player.y; j < player.y + player.size; j++) {
 	    		tiles[i / 2 + 10][j / 2 + 10].setColour(player.color);
-	    	}//if
+	    	}//for
 		}//for
     } // colourTile
 
@@ -435,7 +433,7 @@ public class Main extends JPanel implements KeyListener {
 	    	if(player[i].y >= HEIGHT - player[i].size) {
 	    		player[i].y = HEIGHT - player[i].size;
 	    	}
-    	}
+    	}//for
     } // keepPlayerOnScreen
     
     public void keepPlayersApart() {
@@ -457,8 +455,6 @@ public class Main extends JPanel implements KeyListener {
     } // keepPlayersApart
     
     public void showResult(Graphics g) {
-        //  super.paintComponent(g);
-      	
       	int countRed = 0;
       	int countBlue = 0;
       	int totalColouredTiles = 0;
@@ -500,29 +496,40 @@ public class Main extends JPanel implements KeyListener {
       	
       	g.setColor(Color.BLACK);
       	g.drawString("Press Space to return to menu", 140, 400);
-      	
   	}//showResult
     
-	public void generatePowerup() {
+    public void generatePowerup() {
     	powerup.x= (int)((WIDTH - (20 + 40)) * Math.random());
 	    powerup.y = (int)((HEIGHT - (40 + 40)) * Math.random());
-	    powerup.type = (int)((Math.random()) * (2)) + 1; 
+	    powerup.type = 3;//(int)((Math.random()) * 3) + 1; 
 	    powerup.setCurrentImage();
 	    
 	    hasRun = true;	    
 	}//generatePowerup
 	
-	public void collectItem(Player player, Powerup powerup) {
-		if((player.y + player.size > powerup.y && player.y < powerup.y) && (player.x + player.size > powerup.x && powerup.x + powerup.size > player.x)) {
+	public void collectPowerup(Player player, Powerup powerup) {
+		if((player.y + player.size > powerup.y && powerup.y + powerup.size > player.y) && (player.x + player.size > powerup.x && powerup.x + powerup.size > player.x)) {
 			if(powerup.type == 1) {
 				player.size *= 2;
-				hasBuff = true;
-			} else {
+			} else if(powerup.type == 2) {
 				player.moveAmount *= 2;
-				hasBuff = true;
+			} else if(powerup.type == 3) {
+				colourBomb(player);
 			}
-			timeCollected = seconds;
+			hasBuff = true;
 			hasRun = false;
+			timeCollected = seconds;
 		}//if
     } //collectItem
+	
+	public void colourBomb(Player player) {
+		int r = 80;
+		for(int i = player.x - 100; i < player.x + player.size + 100; i++) {
+			for(int j = player.y - 100; j < player.y + player.size + 100; j++) {
+				if((i-player.x)*(i-player.x) + (j-player.y)*(j-player.y) <= r*r) {
+					tiles[i / 2 + 10][j / 2 + 10].setColour(player.color);
+				}//if
+	    	}//for
+		}//for
+	}//colourBomb
 } // class
