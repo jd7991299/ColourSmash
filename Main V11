@@ -35,7 +35,6 @@ public class Main extends JPanel implements KeyListener {
     int gameState = MENU;
   
     //player
-    
     Player [] player;
     
     //background tiles
@@ -59,8 +58,8 @@ public class Main extends JPanel implements KeyListener {
         player = new Player[2];
     	player[0] = new Player();
     	player[1] = new Player();
-        player[0].color = Color.RED;
-        player[1].color = Color.BLUE;
+        player[0].colour = Color.RED;
+        player[1].colour = Color.BLUE;
         
         powerup = new Powerup();
         
@@ -68,8 +67,8 @@ public class Main extends JPanel implements KeyListener {
         for(int i = 0; i < tiles.length; i++) {
         	for(int j = 0; j < tiles[i].length; j++) {
 				tiles[i][j] = new Tile();
-				tiles[i][j].setX(i * Tile.SIZE);
-				tiles[i][j].setY(j * Tile.SIZE);	
+				tiles[i][j].x = i * Tile.SIZE;
+				tiles[i][j].y = j * Tile.SIZE;	
         	}//for
         }//for
         
@@ -115,7 +114,7 @@ public class Main extends JPanel implements KeyListener {
 	//game logic
 	public void gameLoop() {
         if (gameState == PLAYING) {
-            //collision check and keep players on screen
+            //collision check
         	keepPlayerOnScreen();
             keepPlayersApart();
             
@@ -123,17 +122,17 @@ public class Main extends JPanel implements KeyListener {
         	for(int i = 0; i < player.length; i++) {
         		if (player[i].up && !player[i].down){
     			    player[i].movePlayerUp();   
-    			    player[i].setCurrentImage(player[i].imageUp);
+    			    player[i].currentImage = player[i].imageUp;
     			} else if (player[i].down && !player[i].up){
     			    player[i].movePlayerDown();   
-    			    player[i].setCurrentImage(player[i].imageDown);
+    			    player[i].currentImage = player[i].imageDown;
     			}//if else
         		if (player[i].left && !player[i].right) {
     			    player[i].movePlayerLeft();   
-    			    player[i].setCurrentImage(player[i].imageLeft);
+    			    player[i].currentImage = player[i].imageLeft;
     			} else if(player[i].right && !player[i].left) {
     			    player[i].movePlayerRight();   
-    			    player[i].setCurrentImage(player[i].imageRight);
+    			    player[i].currentImage = player[i].imageRight;
     			}//if else
         		
         		colourTile(player[i], tiles);
@@ -157,8 +156,6 @@ public class Main extends JPanel implements KeyListener {
 		        if(seconds % 5 == 0 && !hasRun && !hasBuff) {
 		        	generatePowerup();
 		        }//if
-		        
-		        //debuff all players after 5 seconds
 		        if(timeCollected - seconds >= 5) {
 		        	player[0].size = 60;
 		        	player[1].size = 60;
@@ -247,7 +244,7 @@ public class Main extends JPanel implements KeyListener {
         	//draw tiles
         	for(int i = 0; i < tiles.length; i++) {
             	for(int j = 0; j < tiles[i].length; j++) {
-                	g.setColor(tiles[i][j].getColour());
+                	g.setColor(tiles[i][j].colour);
             		g.fillRect(tiles[i][j].x, tiles[i][j].y, Tile.SIZE, Tile.SIZE);	
             	}//for
             }//for
@@ -264,8 +261,8 @@ public class Main extends JPanel implements KeyListener {
             //draw powerup
             if(hasRun) {
             	g.drawImage(powerup.currentImage, powerup.x, powerup.y, powerup.size, powerup.size, this);
-            }
-        }
+            }//if
+        }//if
 
         // ===== WIN SCREEN =====
         else if (gameState == RESULT) {
@@ -276,7 +273,7 @@ public class Main extends JPanel implements KeyListener {
 
     // ===== KEY PRESS =====
     public void keyPressed(KeyEvent e) {
-    	// Select game mode from WELCOM screen
+    	// Select game mode from WELCOME screen
     	if(gameState == MENU) {
 	    	if (e.getKeyCode() == KeyEvent.VK_1) {
 	        	mode = 1;
@@ -397,7 +394,7 @@ public class Main extends JPanel implements KeyListener {
         
         for(int i = 0; i < tiles.length; i++) {
         	for(int j = 0; j < tiles[i].length; j++) {
-				tiles[i][j].setColour(Color.WHITE);
+				tiles[i][j].colour = Color.WHITE;
         	}//for
         }//for
       
@@ -406,7 +403,7 @@ public class Main extends JPanel implements KeyListener {
         	player[i].down = false;
         	player[i].left = false;
         	player[i].right = false;
-        	player[i].setCurrentImage(player[i].imageDown);
+        	player[i].currentImage = player[i].imageDown;
         }//for
 
     	gameState = PLAYING;
@@ -419,8 +416,8 @@ public class Main extends JPanel implements KeyListener {
 		for(int i = player.x; i < player.x + player.size;i++) {
 			for(int j = player.y; j < player.y + player.size; j++) {
 				if(i >= 0 && i < WIDTH && j >= 0 && j < HEIGHT) {
-					tiles[i / 2][j / 2].setColour(player.color);
-				}
+					tiles[i / 2][j / 2].colour = player.colour;
+				}//if
 	    	}//for
 		}//for
     } // colourTile
@@ -430,19 +427,19 @@ public class Main extends JPanel implements KeyListener {
     	for(int i = 0; i < player.length; i++) {
 	    	if(player[i].x <= 0) {
 	    		player[i].x = 0;
-	    	}
+	    	}//if
 	    	
 	    	if(player[i].x >= WIDTH - player[i].size) {
 	    		player[i].x = WIDTH - player[i].size;
-	    	}
+	    	}//if
 	    	
 	    	if(player[i].y <= 0) {
 	    		player[i].y = 0;
-	    	}
+	    	}//if
 	    	
 	    	if(player[i].y >= HEIGHT - player[i].size) {
 	    		player[i].y = HEIGHT - player[i].size;
-	    	}
+	    	}//if
     	}//for
     } // keepPlayerOnScreen
     
@@ -450,7 +447,6 @@ public class Main extends JPanel implements KeyListener {
     	if((player[0].y + player[0].size > player[1].y && player[0].y < player[1].y) && (player[0].x + player[0].size > player[1].x && player[1].x + player[1].size > player[0].x)) {
     		player[0].y -= 5;
     		player[1].y += 5;
-    		
     	} else if((player[1].y + player[1].size > player[0].y && player[1].y < player[0].y) && (player[1].x + player[1].size > player[0].x && player[0].x + player[0].size > player[1].x)) {
     		player[0].y += 5;
     		player[1].y -= 5;
@@ -473,15 +469,15 @@ public class Main extends JPanel implements KeyListener {
       	
       	for(int i = 0; i < tiles.length; i++) {
           	for(int j = 0; j < tiles[i].length; j++) {
-              	if(tiles[i][j].getColour().equals(Color.RED)) {
+              	if(tiles[i][j].colour.equals(Color.RED)) {
               		countRed++;
                   	totalColouredTiles++;
-              	} else if(tiles[i][j].getColour().equals(Color.BLUE)) {
+              	} else if(tiles[i][j].colour.equals(Color.BLUE)) {
               		countBlue++;
                   	totalColouredTiles++;
               	}//if
           	}//for
-          }//for
+        }//for
       	
       	percentRed = Math.round(1000.0 * countRed / totalColouredTiles) / 10.0;
       	percentBlue = Math.round(1000.0 * countBlue / totalColouredTiles) / 10.0;
@@ -509,10 +505,8 @@ public class Main extends JPanel implements KeyListener {
   	}//showResult
     
     public void generatePowerup() {
-    	//generates a random location for powerup on the screen
     	powerup.x= (int)((WIDTH - (20 + 40)) * Math.random());
 	    powerup.y = (int)((HEIGHT - (40 + 40)) * Math.random());
-	    
 	    powerup.type = (int)((Math.random()) * 3) + 1; 
 	    powerup.setCurrentImage();
 	    
@@ -535,11 +529,11 @@ public class Main extends JPanel implements KeyListener {
     } //collectItem
 	
 	public void colourBomb(Player player) {
-		int r = 240;
+		int r = 200;
 		for(int i = powerup.x - r + powerup.size / 2; i < powerup.x + powerup.size / 2 + r; i++) {
 			for(int j = powerup.y - r + powerup.size / 2; j < powerup.y + powerup.size / 2 + r; j++) {
 				if((i - (powerup.x + powerup.size / 2))*(i - (powerup.x + powerup.size / 2)) + (j - (powerup.y + powerup.size / 2))*(j - (powerup.y + powerup.size / 2)) <= r*r && i >= 0 && i < WIDTH && j >= 0 && j < HEIGHT) {
-					tiles[i / 2][j / 2].setColour(player.color);
+					tiles[i / 2][j / 2].colour = player.colour;
 				}//if
 	    	}//for
 		}//for
